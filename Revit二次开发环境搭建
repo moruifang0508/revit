@@ -1,0 +1,102 @@
+
+安装
+系统：Windows 10专业版 64位 1. Revit 2019 ； 2. Visual Studio 2017(用于代码编写) ； 3. Revit SDK 2019 (用于代码测试)； 4. AddinManager ；
+5. Revit Lookup； 6. ILSpy 4.0.1；
+1 Revit 2019
+这个直接在Autodesk上就可以找到，找到直接安装就好了，这里不赘述，太旧的版本就不必装了。
+2 Visual Studio 2017
+注意各种.NET框架的安装，另外也要安装 .Net Core。根据官方某英文页面的说法，Revit 2019对应 .NET Framework 4.7。
+3 Revit SDK 2019
+最好和Revit 2019安装在同一路径，方便查找。
+4 配置AddinManager
+SDK安装后包含了REVIT SDK文件和AddInManager，插件用来允许外部二次开发代码。
+在windows7以上环境中需打开显示隐藏文件才能进行看到下面的目录C:\ProgramData\Autodesk\Revit\Addins\2019
+复制SDK文件下的Add-In Manager目录下的AddInManager.dll和Autodesk.AddInManager.addin文件到上面的目录中，更改Autodesk.AddInManager.addin文件中的标签中的东西，里面的路径为SDK的实际安装路径，然后保存。
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+   <AddIn Type="Command">
+      <Assembly>D:\Program Files\Revit 2019.1 SDK\Add-In Manager\AddInManager.dll</Assembly>
+      <ClientId>8C0A9E25-B7C5-421c-A1AB-702F73FA551F</ClientId>
+      <FullClassName>AddInManager.CAddInManager</FullClassName>
+      <Text>Add-In Manager (Manual Mode)</Text>
+      <VisibilityMode>AlwaysVisible</VisibilityMode>
+      <LanguageType>Unknown</LanguageType>
+      <VendorId>ADSK</VendorId>
+      <VendorDescription>Autodesk, www.autodesk.com</VendorDescription>
+  </AddIn>
+  <AddIn Type="Command">
+      <Assembly>D:\Program Files\Revit 2019.1 SDK\Add-In Manager\AddInManager.dll</Assembly>
+      <ClientId>6FDB8EC7-CCD3-4fc0-ADB7-B459D298FB93</ClientId>
+      <FullClassName>AddInManager.CAddInManagerFaceless</FullClassName>
+      <Text>Add-In Manager (Manual Mode, Faceless)</Text>
+      <VisibilityMode>AlwaysVisible</VisibilityMode>
+      <LanguageType>Unknown</LanguageType>
+      <VendorId>ADSK</VendorId>
+      <VendorDescription>Autodesk, www.autodesk.com</VendorDescription>
+  </AddIn>
+  <AddIn Type="Command">
+      <Assembly>D:\Program Files\Revit 2019.1 SDK\Add-In Manager\AddInManager.dll</Assembly>
+      <ClientId>91A2419C-5FCA-491A-BAA3-29A497EC07C7</ClientId>
+      <FullClassName>AddInManager.CAddInManagerReadOnly</FullClassName>
+      <Text>Add-In Manager (ReadOnly Mode)</Text>
+      <VisibilityMode>AlwaysVisible</VisibilityMode>
+      <LanguageType>Unknown</LanguageType>
+      <VendorId>ADSK</VendorId>
+      <VendorDescription>Autodesk, www.autodesk.com</VendorDescription>
+  </AddIn>  
+</RevitAddIns>
+更改后打开Revit 2019即可在附加模块看到安装的插件。 
+
+
+Revit Lookup
+下载地址， 
+
+选择Download ZIP，下载后解压在Revit SDK安装路径下，点击进入文件夹找到RevitLookup文件（为sln格式），使用VS打开。
+打开后重新添加以下引用（这几个引用未重新引用之前会带有黄色标记），在Revit安装路径下可以找到这些dll。之后进行生成，这样会在D:\REVIT 2019 SDK\RevitLookup-2019.0.0.7\CS\bin\Debug文件夹中生成RevitLookup.dll编译文件。 
+
+
+进入 D:\REVIT 2019 SDK\RevitLookup-2019.0.0.7\CS路径下找到RevitLookup.addin文件，对文件进行编辑修改，将里面的第4行修改为（即上述编译生成的RevitLookup.dll所在的路径）：
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<RevitAddIns>
+   <AddIn Type="Application">
+      <Assembly>D:\Program Files\Revit 2019.1 SDK\RevitLookup-2019.0.0.7\CS\bin\Debug\RevitLookup.dll</Assembly>
+      <ClientId>356CDA5A-E6C5-4c2f-A9EF-B3222116B8C8</ClientId>
+      <FullClassName>RevitLookup.App</FullClassName>
+      <Name>Revit Lookup</Name>
+      <VendorId>ADSK</VendorId>
+      <VendorDescription>Autodesk, www.autodesk.com</VendorDescription>   
+   </AddIn>
+</RevitAddIns>\CS\bin\Debug\RevitLookup.dll</Assembly>
+将其拷贝到下列目录中: C:\ProgramData\Autodesk\Revit\Addins\2019，这便完成了RevitLookup的安装。如果Revit 2019 正在运行，则需要关闭后重启才能在附加模块看到Lookup。
+ILSpy 4.0.1
+下载地址在这里。，需要自己编译。
+测试
+这里是引用https://www.cnblogs.com/bimer/p/7473208.html
+1、启动Visual Studio，新建项目，在“模板”里选择“Visual C#”→“类库(.Net Framework)”，在下方的名称栏填上Hello Revit。 2、添加引用，在引用管理器中选择“浏览”，在Revit安装目录下找到RevitAPI.dll和RevitAPIUI.dll，把这两个文件分别添加到项目中。然后记得把上述两个引用的“复制到本地”属性改为False，否则你编译会生成一大堆没什么用的东西。因为我们做的是插件，不可能脱离Revit程序本身来运行的。 3、把默认生成的“using……”代码块只留下 using System; 在后面加上 using Autodesk.Revit.DB; using Autodesk.Revit.UI; using Autodesk.Revit.Attributes; 4、在默认生成的public class Class1{}前面加上 [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)] 5、把默认生成的public class Class1{}改成 public class Class1: IExternalCommand{} 6、在public class Class1: IExternalCommand{}内部添加 public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements) { } 7、在public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements) { }内部添加 TaskDialog.Show("Demo", "Hello Revit!"); return Result.Succeeded; 8、完成的代码应该是这个样子：
+using System; using Autodesk.Revit.DB; 
+using Autodesk.Revit.UI; 
+using Autodesk.Revit.Attributes; 
+namespace HelloRevit
+{
+    [Transaction(TransactionMode.Manual)]
+    public class Class1 : IExternalCommand
+    {
+        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        {
+            TaskDialog.Show("Revit", "Hello Revit!");
+            return Autodesk.Revit.UI.Result.Succeeded;
+        }
+    }
+}
+9、保存全部文件。在项目属性里把“生成”→“目标平台”由Any CPU改成x64（省略这步的话编译时会出现警告）。检查无误后生成类库，并记下输出窗口中的文件位置。 10、添加一个文本文件，输入以下内容：
+<?xml version ="1.0" encoding ="utf-8" standalone ="no"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Assembly>{类库的路径（含文件名）}</Assembly>
+    <AddInId>{Guid}</AddInId>
+    <FullClassName>HelloWorld.Class1</FullClassName>
+    <Text>HelloWorld</Text>
+    <VendorId>NAME</VendorId>
+  </AddIn>
+</RevitAddIns>
+注意第4行和第5行都要根据实际情况填写。第4行就是上一步记下的文件位置，第5行可以在ssemblyInfo.cs文件里找到。 11、把这个文本文件重命名为“HelloRevit.addin”，复制到Revit插件目录下。Win7/8的位置是%programdata%\Autodesk\Revit\addins\201，其中“%programdata%”一般是“C:\ProgramData”（系统装在C盘），“201”是Revit的版本。 12、启动Revit，在“附加模块”→“外部工具”的下拉箭头处找到“HelloRevit”，执行后，可以看到弹出对话框，成功。
